@@ -64,12 +64,12 @@
   <p class="name">EdgeHop</p>
   <h1>One keyboard and mouse for several PCs. Nothing to install on the others.</h1>
   <p class="lead">Move the pointer past the edge of your screen and it continues on the PC next to it. That PC only sees a USB keyboard and mouse, so it works on machines where you cannot install software.</p>
-  <a class="btn" href="https://github.com/Downlord/EdgeHop">Source on GitHub</a>
-  <a class="btn ghost" href="#start">Getting started</a>
-  <p class="status"><strong>Status: early prototype.</strong> Firmware and the Windows app build and the switching logic is unit-tested. Testing on real hardware has only just begun. There are no downloads yet; you build it yourself.</p>
+  <a class="btn" href="#how">How it works</a>
+  <a class="btn ghost" href="#start">What you need</a>
+  <p class="status"><strong>Status: early prototype.</strong> Firmware and the Windows app build and the switching logic is unit-tested. Testing on real hardware has only just begun. There are no downloads yet, and the source code is not public yet.</p>
 </header>
 
-<h2>How it works</h2>
+<h2 id="how">How it works</h2>
 <div class="diagram">
 <svg viewBox="0 0 860 210" role="img" aria-label="Keyboard and mouse go into the main PC. The EdgeHop app sends input over a USB dongle and an encrypted radio link to a dongle in each other PC, which acts as a USB keyboard and mouse.">
   <g font-family="system-ui, sans-serif" font-size="14" fill="currentColor" stroke="currentColor">
@@ -131,13 +131,13 @@
 </table>
 </div>
 
-<h2 id="start">Getting started</h2>
-<p>You need:</p>
+<h2 id="start">What you need</h2>
 <ul>
   <li>One ESP32-S3 board with a native USB port for each PC you want to control.</li>
   <li>One more board for your main PC. This one can be an ESP32-S3 or an ESP32-C6.</li>
   <li>A main PC running Windows 10 or 11. The other PCs run Windows too for now.</li>
 </ul>
+<p>Setting it up:</p>
 <ol>
   <li>Build the firmware with PlatformIO and flash it to every board.</li>
   <li>Build and start the EdgeHop app on your main PC (.NET 8).</li>
@@ -145,7 +145,7 @@
   <li>Plug in each other board in turn, pair it, then move it to its PC.</li>
   <li>Drag the screens into place in the layout editor.</li>
 </ol>
-<p>The <a href="https://github.com/Downlord/EdgeHop#readme">README</a> has the exact commands.</p>
+<p>The source code and build instructions will be published once the hardware tests are done.</p>
 
 <h2>Limits</h2>
 <ul>
