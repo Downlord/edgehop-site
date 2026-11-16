@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EdgeHop — one keyboard and mouse for several PCs, no software on the others</title>
+<meta name="description" content="EdgeHop shares one keyboard and mouse between PCs using small ESP32 USB dongles. The other PCs need no software: they only see a USB keyboard and mouse.">
+<style>
+  :root {
+    --bg: #f6f5f1; --ink: #17181c; --muted: #5d6068; --line: #d9d7cf;
+    --card: #ffffff; --accent: #0b6e4f; --accent-ink: #ffffff; --warn: #8a5a00; --warn-bg: #fff4d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121316; --ink: #ecebe6; --muted: #a0a3ab; --line: #2c2e34;
+      --card: #1a1c20; --accent: #4fd1a1; --accent-ink: #0c1512; --warn: #f1c668; --warn-bg: #2b2413;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 22px; }
+  header { padding: 72px 0 40px; }
+  .name { font-weight: 700; letter-spacing: 0.02em; color: var(--accent); margin: 0 0 18px; }
+  h1 { font-size: clamp(2rem, 5.2vw, 3.3rem); line-height: 1.1; margin: 0 0 20px; letter-spacing: -0.02em; text-wrap: balance; }
+  .lead { font-size: 1.2rem; color: var(--muted); max-width: 40em; margin: 0 0 28px; }
+  .btn {
+    display: inline-block; background: var(--accent); color: var(--accent-ink); text-decoration: none;
+    font-weight: 600; padding: 11px 20px; border-radius: 8px; margin-right: 10px;
+  }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .status {
+    background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 12px 16px;
+    margin: 34px 0 0; font-size: 0.95rem;
+  }
+  h2 { font-size: 1.5rem; margin: 64px 0 16px; letter-spacing: -0.01em; }
+  p { margin: 0 0 14px; }
+  .diagram { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; overflow-x: auto; }
+  .diagram svg { display: block; min-width: 640px; width: 100%; height: auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+  .card p { margin: 0; color: var(--muted); font-size: 0.96rem; }
+  ol, ul { padding-left: 1.3em; margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.96rem; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  kbd {
+    font: 0.85em ui-monospace, Consolas, monospace; background: var(--card); border: 1px solid var(--line);
+    border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+  }
+  a { color: var(--accent); }
+  footer { margin: 72px 0 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="name">EdgeHop</p>
+  <h1>One keyboard and mouse for several PCs. Nothing to install on the others.</h1>
+  <p class="lead">Move the pointer past the edge of your screen and it continues on the PC next to it. That PC only sees a USB keyboard and mouse, so it works on machines where you cannot install software.</p>
+  <a class="btn" href="https://github.com/DownLord/EdgeHop">Source on GitHub</a>
+  <a class="btn ghost" href="#start">Getting started</a>
+  <p class="status"><strong>Status: early prototype.</strong> Firmware and the Windows app build and the switching logic is unit-tested. Testing on real hardware has only just begun. There are no downloads yet; you build it yourself.</p>
+</header>
+
+<h2>How it works</h2>
+<div class="diagram">
+<svg viewBox="0 0 860 210" role="img" aria-label="Keyboard and mouse go into the main PC. The EdgeHop app sends input over a USB dongle and an encrypted radio link to a dongle in each other PC, which acts as a USB keyboard and mouse.">
+  <g font-family="system-ui, sans-serif" font-size="14" fill="currentColor" stroke="currentColor">
+    <rect x="10" y="60" width="200" height="90" rx="10" fill="none" stroke-width="1.5"/>
+    <text x="110" y="98" text-anchor="middle" stroke="none" font-weight="600">Your main PC</text>
+    <text x="110" y="120" text-anchor="middle" stroke="none" opacity="0.7">EdgeHop app (Windows)</text>
+
+    <line x1="210" y1="105" x2="268" y2="105" stroke-width="1.5"/>
+    <text x="239" y="95" text-anchor="middle" stroke="none" font-size="12" opacity="0.7">USB</text>
+    <rect x="268" y="80" width="110" height="50" rx="8" fill="none" stroke-width="1.5"/>
+    <text x="323" y="110" text-anchor="middle" stroke="none">Dongle</text>
+
+    <path d="M378 105 C 440 105, 440 50, 500 50" fill="none" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <path d="M378 105 C 440 105, 440 160, 500 160" fill="none" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <text x="440" y="110" text-anchor="middle" stroke="none" font-size="12" opacity="0.7">encrypted radio</text>
+
+    <rect x="500" y="25" width="110" height="50" rx="8" fill="none" stroke-width="1.5"/>
+    <text x="555" y="55" text-anchor="middle" stroke="none">Dongle</text>
+    <rect x="500" y="135" width="110" height="50" rx="8" fill="none" stroke-width="1.5"/>
+    <text x="555" y="165" text-anchor="middle" stroke="none">Dongle</text>
+
+    <line x1="610" y1="50" x2="668" y2="50" stroke-width="1.5"/>
+    <line x1="610" y1="160" x2="668" y2="160" stroke-width="1.5"/>
+    <text x="639" y="40" text-anchor="middle" stroke="none" font-size="12" opacity="0.7">USB</text>
+    <text x="639" y="150" text-anchor="middle" stroke="none" font-size="12" opacity="0.7">USB</text>
+
+    <rect x="668" y="15" width="180" height="70" rx="10" fill="none" stroke-width="1.5"/>
+    <text x="758" y="46" text-anchor="middle" stroke="none" font-weight="600">Other PC</text>
+    <text x="758" y="66" text-anchor="middle" stroke="none" opacity="0.7">sees keyboard + mouse</text>
+    <rect x="668" y="125" width="180" height="70" rx="10" fill="none" stroke-width="1.5"/>
+    <text x="758" y="156" text-anchor="middle" stroke="none" font-weight="600">Other PC</text>
+    <text x="758" y="176" text-anchor="middle" stroke="none" opacity="0.7">sees keyboard + mouse</text>
+  </g>
+</svg>
+</div>
+<p style="margin-top:14px">A small app on your main PC watches the keyboard and mouse. When the pointer leaves the screen towards another PC, the app sends your input to a dongle, which passes it by radio to the dongle plugged into that PC. The dongles talk to each other directly; they do not join your WiFi network.</p>
+
+<h2>What it does</h2>
+<div class="grid">
+  <div class="card"><h3>No software on the other PCs</h3><p>Each one gets a dongle that acts as a standard USB keyboard and mouse. No drivers, no admin rights.</p></div>
+  <div class="card"><h3>Arrange screens by dragging</h3><p>Place each PC's screen next to yours in the layout editor. The pointer crosses where the screens touch.</p></div>
+  <div class="card"><h3>Lands where it crossed</h3><p>The pointer is sent as an absolute position, so it arrives at the right height whatever the other PC's mouse settings are.</p></div>
+  <div class="card"><h3>Private link</h3><p>Dongles are paired over USB and only talk to their partner. The link is encrypted and every packet is authenticated.</p></div>
+  <div class="card"><h3>No stuck keys</h3><p>If the link drops, the other PC's dongle releases every key and button within half a second.</p></div>
+  <div class="card"><h3>Type your clipboard</h3><p>Send clipboard text to the other PC as keystrokes. German and US keyboard layouts are supported.</p></div>
+  <div class="card"><h3>Media and extra mouse keys</h3><p>Volume, play/pause, back/forward buttons and horizontal scrolling are passed along.</p></div>
+  <div class="card"><h3>Keep the others awake</h3><p>Optionally nudge the pointer on the other PCs while you are at your desk, driven by a Home Assistant occupancy sensor.</p></div>
+</div>
+
+<h2>Hotkeys</h2>
+<div class="tablewrap">
+<table>
+  <tr><th>Action</th><th>Default</th></tr>
+  <tr><td>Jump to screen n (1 is the main PC)</td><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>1</kbd> … <kbd>9</kbd></td></tr>
+  <tr><td>Back to the main PC</td><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Home</kbd></td></tr>
+  <tr><td>Keep the pointer on the current screen</td><td><kbd>Scroll Lock</kbd></td></tr>
+  <tr><td>Type clipboard text on the other PC</td><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>V</kbd></td></tr>
+  <tr><td>Send Ctrl+Alt+Del to the other PC</td><td><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>End</kbd></td></tr>
+</table>
+</div>
+
+<h2 id="start">Getting started</h2>
+<p>You need:</p>
+<ul>
+  <li>One ESP32-S3 board with a native USB port for each PC you want to control.</li>
+  <li>One more board for your main PC. This one can be an ESP32-S3 or an ESP32-C6.</li>
+  <li>A main PC running Windows 10 or 11. The other PCs run Windows too for now.</li>
+</ul>
+<ol>
+  <li>Build the firmware with PlatformIO and flash it to every board.</li>
+  <li>Build and start the EdgeHop app on your main PC (.NET 8).</li>
+  <li>Plug in the board for the main PC and choose "Set up master dongle".</li>
+  <li>Plug in each other board in turn, pair it, then move it to its PC.</li>
+  <li>Drag the screens into place in the layout editor.</li>
+</ol>
+<p>The <a href="https://github.com/DownLord/EdgeHop#readme">README</a> has the exact commands.</p>
+
+<h2>Limits</h2>
+<ul>
+  <li>The other PCs are assumed to have one monitor each.</li>
+  <li>Clipboard goes one way, as typed text. No files or images.</li>
+  <li>At most six other PCs per main PC.</li>
+  <li>Range is about one room.</li>
+  <li>A sleeping PC can only be woken if USB wake is enabled for the dongle on it.</li>
+</ul>
+
+<footer>
+  EdgeHop is an independent hobby project and is not affiliated with Symless or Synergy.
+</footer>
+
+</div>
+</body>
+</html>
